@@ -19,3 +19,4 @@ npm i
 node index.js
 ```
 4. Find your logs in benchmarkServer/logs
+5. If you want to run another test remove and deploy the functions again to make sure that containers are not reused.
