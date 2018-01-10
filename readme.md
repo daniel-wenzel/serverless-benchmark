@@ -1,3 +1,21 @@
 # Serverless Benchmark
 
-In der Version hier versucht die Service Function die Zeit zu synchronisieren. Das macht die Ergebnisse nur ungenauer. Wir sollten das raus nehmen. Es liegt außerdem eine Funktion in der Service Function die kram in den Arbeitsspeicher schreibt, die funktioniert auch noch nicht so gut. Mit dem Server haben wir auch die Service Function ausgeführt, das hat funktioniert, aber wahrscheinlich ist es besser wenn wir ein schon existierendes HTTP Load Generation Tool verwenden.
+Starting a test:
+
+1. Deploy serverless_on_aws and serverless_on_gcf. You will have to configure aws and gcf first (see for gcf: https://serverless.com/framework/docs/providers/google/guide/credentials/)
+```
+cd serverless_on_aws
+sls deploy
+cd ../serverless_on_gcf
+sls deploy
+```
+
+2. Copy the endpoints and replace the default endpoints in benchmarkServer/index.js SYSTEMS
+3. Adjust REQUESTS_PER_SECOND and EXPERIMENT_DURATION in index.js
+3. Start a test
+```
+cd benchmarkServer
+npm i
+node index.js
+```
+4. Find your logs in benchmarkServer/logs
