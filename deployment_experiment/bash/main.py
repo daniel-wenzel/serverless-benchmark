@@ -2,9 +2,13 @@ import os
 import json
 import subprocess
 from time import time
+import shutil
 
 GCP_CREDENTIALS_FILE = "serverless-test-XXX.json"
 AWS_CREDENTIALS_FILE = "aws-creds.json"
+
+N_TESTS_FOR_EACH_AMOUNT = 1
+CLEAR_TEST_FOLDERS = True
 
 AWS_GITIGNORE = """# package directories
 node_modules
@@ -161,7 +165,7 @@ if __name__ == '__main__':
 
     results_file = open(results_file_name, 'w+')
     # write results header
-    results_file.write("%s,%s,%s\r\n" % ("amount_of_functions", "aws_average", "gcp_average"))
+    results_file.write("%s,%s,%s\n" % ("amount_of_functions", "aws_average", "gcp_average"))
 
     aws_creds_json = json.load(open(aws_creds))
     os.environ['AWS_ACCESS_KEY_ID'] = aws_creds_json['AWS_ACCESS_KEY_ID']
@@ -231,7 +235,7 @@ if __name__ == '__main__':
         aws_times = []
         gcp_times = []
         # execute the deploy commands with measuring the time needed - each 10 times
-        for i in range(2):
+        for i in range(N_TESTS_FOR_EACH_AMOUNT):
             # start with AWS
             os.chdir(aws_folder)
             d1 = time()
@@ -256,6 +260,10 @@ if __name__ == '__main__':
 
         # store times
         results_file.write(
-            "%s,%s,%s,%s,%s,%s,%s\r\n" % (
-            current_amount_of_function, aws_avg, gcp_avg, aws_min, gcp_min, aws_max, gcp_max))
+            "%s,%s,%s,%s,%s,%s,%s\n" % (
+                current_amount_of_function, aws_avg, gcp_avg, aws_min, gcp_min, aws_max, gcp_max))
+        if CLEAR_TEST_FOLDERS:
+            shutil.rmtree(os.path.join(os.path.dirname(__file__), '..', "test-%s" % test_id,
+                                       "N%s" % current_amount_of_function), ignore_errors=True)
+
     results_file.close()
