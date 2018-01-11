@@ -3,7 +3,7 @@ import json
 import subprocess
 from time import time
 
-GCP_CREDENTIALS_FILE = "serverless-test-a702c687f14d.json"
+GCP_CREDENTIALS_FILE = "serverless-test-XXX.json"
 AWS_CREDENTIALS_FILE = "aws-creds.json"
 
 AWS_GITIGNORE = """# package directories
