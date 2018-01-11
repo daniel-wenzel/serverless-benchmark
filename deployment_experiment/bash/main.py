@@ -2,7 +2,9 @@ import os
 import json
 import subprocess
 from time import time
-import numpy as np
+
+GCP_CREDENTIALS_FILE = "serverless-test-a702c687f14d.json"
+AWS_CREDENTIALS_FILE = "aws-creds.json"
 
 AWS_GITIGNORE = """# package directories
 node_modules
@@ -138,9 +140,6 @@ AWS_YAML_FN_TEMPLATE = """
           path: {NAME}
           method: get
           cors: true"""
-
-GCP_CREDENTIALS_FILE = "serverless-test-a702c687f14d.json"
-AWS_CREDENTIALS_FILE = "aws-creds.json"
 
 if __name__ == '__main__':
     test_id = int(time())
