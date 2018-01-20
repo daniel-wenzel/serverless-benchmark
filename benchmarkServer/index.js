@@ -3,7 +3,27 @@ const rp = require('request-promise');
 const csv = require("fast-csv");
 const fs = require("fs")
 const csvStream = csv.createWriteStream({headers: true});
+const commandLineArgs = require('command-line-args')
+const optionDefinitions = [
+  { name: 'endpoint', alias: 'e', type: String },
+  { name: 'system', alias: 's', type: String },
+  { name: 'run_num', alias: 'n', type: Number },
+  { name: 'workload', alias: 'w', type: String },
+  { name: 'DRY_RUN', alias: 'd', type: Boolean },
+]
+var https = require('https');
 
+const options = commandLineArgs(optionDefinitions)
+
+if (!options.endpoint || !options.system|| !options.workload) {
+  console.error("please provide an endpoint, a sut and a workload path")
+  process.exit(1)
+}
+const DRY_RUN = options.DRY_RUN || false;
+const REQUESTS_PER_SECOND = fs.readFileSync(options.workload).toString().split(/\s+/).map(c => +c)
+const EXPERIMENT_DURATION = REQUESTS_PER_SECOND.length // in seconds
+const COOLDOWN_TIME = 20000 //millis
+const systemUnderTest = options.system;
 let server
 
 let numOpenRequests = 0
@@ -13,41 +33,34 @@ let experimentSecond = 0
 let experimentStartTime = 0
 let knownContainers = new Set()
 
-const REQUESTS_PER_SECOND = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
-const EXPERIMENT_DURATION = 120 // in seconds
-const COOLDOWN_TIME = 10000 //millis
-const DRY_RUN = false;
 
-const SYSTEMS = {
-  "gcf" : "https://us-central1-serverless-benchmark.cloudfunctions.net/http",
-  "lambda": "https://0ltyn2vgc5.execute-api.us-east-1.amazonaws.com/dev/hello-world"
-}
 
-let systemUnderTest = "lambda";
 
-const writableStream = fs.createWriteStream(`logs/combitest_${EXPERIMENT_DURATION}_${REQUESTS_PER_SECOND}_${new Date().getTime()}.csv`);
+const writableStream = fs.createWriteStream(generateName());
 csvStream.pipe(writableStream);
 console.log("starting experiment")
 
-async function testAllSystems() {
-  const systems = Object.keys(SYSTEMS)
-  for (let i=0; i<systems.length; i++) {
-    await benchmarkSystem(systems[i])
-  }
-  writableStream.close()
+function generateName() {
+  const workloadName = options.workload.split('/')[options.workload.split('/').length-1]
+  const n = options.run_num? options.run_num+"_" : "";
+  return `logs/${workloadName}_${systemUnderTest}_${n}${new Date().getTime()}.csv`
 }
-testAllSystems()
-
-async function benchmarkSystem(system) {
-  console.log("Testing system "+system)
-  systemUnderTest = system
+benchmarkSystem()
+async function benchmarkSystem() {
+  console.log("STARTING")
   interval = setInterval(logProgress, 1000)
   await runExperiment()
   clearInterval(interval)
   console.log("===== TEST_DONE =====")
   logProgress()
-}
 
+
+  writableStream.close()
+}
+writableStream.on('close', function () {
+  console.log("stream closed!")
+  process.exit()
+ });
 
 async function runExperiment() {
   experimentStartTime = Date.now()
@@ -65,7 +78,7 @@ async function runExperiment() {
   })
 }
 function planSecond() {
-  const numRequests = REQUESTS_PER_SECOND[Math.min(Math.floor(experimentSecond / 5), REQUESTS_PER_SECOND.length-1)]
+  const numRequests = REQUESTS_PER_SECOND[Math.min(experimentSecond, REQUESTS_PER_SECOND.length-1)]
   experimentSecond ++;
   for (let i=0; i<numRequests; i++) {
 
@@ -75,7 +88,7 @@ function planSecond() {
 }
 
 function getEndpoint() {
-  return SYSTEMS[systemUnderTest]
+  return options.endpoint
 }
 
 async function makeDelayedRequest(delay) {
@@ -106,6 +119,7 @@ async function makeRequest() {
 
   answer.system = systemUnderTest
   answer["new_container"] = isNewContainer(answer.containerId)
+  answer["n"] = options.run_num
   answer["1_requeestSentExperimentTime"] = sendTime - experimentStartTime;
   answer["1_requestSent"] = sendTime
   answer["2_requestRead"] = answer.executionStartTime
@@ -115,6 +129,7 @@ async function makeRequest() {
   answer["ProcessingLatency_2-3"] = answer["3_responseSent"] - answer["2_requestRead"]
   answer["ResponseLatency_3-4"] = answer["4_responseReceived"] - answer["3_responseSent"]
   answer["StartupLatency_clockDrifted"] = answer["RequestLatency_1-2"] - answer["ResponseLatency_3-4"]
+  answer["RequestResponseLatency_1-4"] = answer["4_responseReceived"] - answer["1_requestSent"]
   csvStream.write(answer);
 }
 

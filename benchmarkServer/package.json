@@ -10,7 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "command-line-args": "^5.0.1",
     "fast-csv": "^2.4.1",
+    "randgen": "^0.1.0",
     "request": "^2.83.0",
     "request-promise": "^4.2.2"
   }

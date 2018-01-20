@@ -1,0 +1,11 @@
+Service Information
+service: serverless-hello-world
+stage: dev
+region: us-east-1
+stack: serverless-hello-world-dev
+api keys:
+  None
+endpoints:
+  GET - https://xmqh1pdak0.execute-api.us-east-1.amazonaws.com/dev/hello-world
+functions:
+  helloWorld: serverless-hello-world-dev-helloWorld
