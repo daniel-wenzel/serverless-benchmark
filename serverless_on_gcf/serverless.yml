@@ -3,7 +3,7 @@ service: my-service
 provider:
   name: google
   runtime: nodejs
-  project: serverless-benchmark
+  project: green-device-187910
   # the path to the credentials file needs to be absolute
   credentials: ~/.gcloud/keyfile.json
 

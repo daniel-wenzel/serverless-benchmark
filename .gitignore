@@ -1,7 +1,8 @@
-<<<<<<< HEAD
-
+.DS_Store
 # Created by https://www.gitignore.io/api/node,linux
 
+.RData
+.Rhistory
 ### Linux ###
 *~
 
@@ -18,8 +19,6 @@
 .nfs*
 
 ### Node ###
-=======
->>>>>>> 0bdd4f6e743ba268641daffc87dce43d13c1c5b3
 # Logs
 logs
 *.log
