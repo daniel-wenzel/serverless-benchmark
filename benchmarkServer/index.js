@@ -9,15 +9,17 @@ let server
 let numOpenRequests = 0
 let numDoneRequest = 0
 
+let experimentSecond = 0
 let experimentStartTime = 0
 let knownContainers = new Set()
 
-const REQUESTS_PER_SECOND = 20
-const EXPERIMENT_DURATION = 52 // in seconds
+const REQUESTS_PER_SECOND = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+const EXPERIMENT_DURATION = 120 // in seconds
 const COOLDOWN_TIME = 10000 //millis
+const DRY_RUN = false;
 
 const SYSTEMS = {
-  "gcf" : "https://us-central1-green-device-187910.cloudfunctions.net/http",
+  "gcf" : "https://us-central1-serverless-benchmark.cloudfunctions.net/http",
   "lambda": "https://0ltyn2vgc5.execute-api.us-east-1.amazonaws.com/dev/hello-world"
 }
 
@@ -52,6 +54,7 @@ async function runExperiment() {
   knownContainers = new Set()
   numOpenRequests = 0
   numDoneRequest = 0
+  experimentSecond = 0
   const Planner = setInterval(planSecond, 1000, 0)
   return new Promise((res, rej) => {
     setTimeout(() => {
@@ -62,7 +65,9 @@ async function runExperiment() {
   })
 }
 function planSecond() {
-  for (let i=0; i<REQUESTS_PER_SECOND; i++) {
+  const numRequests = REQUESTS_PER_SECOND[Math.min(Math.floor(experimentSecond / 5), REQUESTS_PER_SECOND.length-1)]
+  experimentSecond ++;
+  for (let i=0; i<numRequests; i++) {
 
     let offset = Math.random() * 1000 //uniform distribution
     makeDelayedRequest(offset)
@@ -84,6 +89,12 @@ async function makeDelayedRequest(delay) {
 }
 
 async function makeRequest() {
+  if (DRY_RUN) {
+    numOpenRequests ++
+    numDoneRequest ++
+    numOpenRequests --
+    return
+  }
   numOpenRequests ++
   const sendTime = new Date().getTime()
   const answerString = await rp(getEndpoint())
@@ -108,7 +119,7 @@ async function makeRequest() {
 }
 
 function logProgress() {
-  console.log(`${numDoneRequest} Requests Done, ${numOpenRequests} Requests Open`)
+  console.log(`${experimentSecond}/${EXPERIMENT_DURATION}: ${numDoneRequest} Requests Done, ${numOpenRequests} Requests Open`)
 }
 
 function isNewContainer(containerId) {

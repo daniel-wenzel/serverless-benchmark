@@ -1,5 +1,5 @@
-setwd("~/git/serverless-benchmark/benchmarkServer/logs")
-data <- read.csv2("combitest_52_20_1515928272186.csv", sep=",")
+setwd("~/projects/github/serverlessbenchmark/benchmarkServer/analysis")
+data <- read.csv2("../logs/combitest_120_1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20_1516039782943", sep=",")
 options(scipen = 999) # don't print timestamps with exp function
 
 # n = 2000
@@ -46,12 +46,12 @@ print(order(time)) # strange output
 # lambda only at the beginning
 
 # TODO: time relative to experiment start)
-plot(start, isNewCont, main = "Container Reuse", xlab = "unix time", ylab = "1=reuse, 2=new")
+plot(time, isNewCont, main = "Container Reuse", xlab = "unix time", ylab = "1=reuse, 2=new")
 
 # Startup latency
-plot(start, startupLat, main = "Startup Latency", xlab = "unix time", ylab = "elapsed time")
+plot(time, startupLat, main = "Startup Latency", xlab = "unix time", ylab = "elapsed time")
 
-plot(start[platform == "gcf"], startupLat[platform == "gcf"],
+plot(time[platform == "gcf"], startupLat[platform == "gcf"],
      main = "Startup Latency GCF",
      xlab = "unix time",
      ylab = "elapsed time")
