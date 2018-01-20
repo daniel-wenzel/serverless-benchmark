@@ -20,6 +20,7 @@ function removeAll {
   serverless remove
   cd ..
 }
+removeAll
 deployAWS
 cd benchmarkServer
 node index.js -e $endpoint -s lambda -w $WORKLOAD -n 1
