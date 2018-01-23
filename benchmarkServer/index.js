@@ -10,6 +10,8 @@ const optionDefinitions = [
   { name: 'run_num', alias: 'n', type: Number },
   { name: 'workload', alias: 'w', type: String },
   { name: 'DRY_RUN', alias: 'd', type: Boolean },
+  { name: 'PAYLOAD', alias: 'p', type: String},
+  { name: 'log_path', alias: 'l', type: String}
 ]
 var https = require('https');
 
@@ -43,7 +45,9 @@ console.log("starting experiment")
 function generateName() {
   const workloadName = options.workload.split('/')[options.workload.split('/').length-1]
   const n = options.run_num? options.run_num+"_" : "";
-  return `logs/${workloadName}_${systemUnderTest}_${n}${new Date().getTime()}.csv`
+  const p = options.PAYLOAD? options.PAYLOAD+"_" : "";
+  const basePath = options.log_path? options.log_path : "logs"
+  return `${basePath}/${workloadName}_${systemUnderTest}_${p}${n}${new Date().getTime()}.csv`
 }
 benchmarkSystem()
 async function benchmarkSystem() {
@@ -120,6 +124,7 @@ async function makeRequest() {
   answer.system = systemUnderTest
   answer["new_container"] = isNewContainer(answer.containerId)
   answer["n"] = options.run_num
+  answer["payload"] = options.PAYLOAD
   answer["1_requeestSentExperimentTime"] = sendTime - experimentStartTime;
   answer["1_requestSent"] = sendTime
   answer["2_requestRead"] = answer.executionStartTime

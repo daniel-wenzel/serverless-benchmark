@@ -1,32 +1,43 @@
-WORKLOAD=../workloads/normal_10
-function deployAWS {
-  cd serverless_on_aws
-  serverless deploy
-  endpoint=$(serverless info | egrep -o "https://.*")
-  cd ..
-}
-function deployGCF {
-  cd serverless_on_gcf
+
+function deploy {
+  cd $FOLDER
+  rm pi*
+  cp ../fileGenerator/files/$PAYLOAD_FILE .
   serverless deploy
   endpoint=$(serverless info | egrep -o "https://.*")
   cd ..
 }
 
-function removeAll {
-  cd serverless_on_aws
-  serverless remove
-  cd ..
-  cd serverless_on_gcf
+function remove {
+  cd $FOLDER
   serverless remove
   cd ..
 }
-removeAll
-deployAWS
-cd benchmarkServer
-node index.js -e $endpoint -s lambda -w $WORKLOAD -n 1
-cd ..
-deployGCF
-cd benchmarkServer
-node index.js -e $endpoint -s gcf -w $WORKLOAD -n 1
-cd ..
-removeAll
+function run {
+  cd benchmarkServer
+  node index.js -e $endpoint -s $SYSTEM -w $WORKLOAD -n $n -p $PAYLOAD -l ../$LOGS_BASE_DIR/$EXPERIMENT_NAME
+  cd ..
+}
+
+
+LOGS_BASE_DIR=logs
+EXPERIMENT_NAME=constant_load
+WORKLOAD=../workloads/constant_15
+SYSTEM=lambda
+FOLDER=serverless_on_aws
+PAYLOADS=( 0, 50, 100)
+NUM_RUNS=1
+PAYLOAD_FILE=pi"$PAYLOAD"mb.txt
+
+mkdir $LOGS_BASE_DIR/$EXPERIMENT_NAME
+remove
+for n in `seq 1 $NUM_RUNS`;
+do
+  for PAYLOAD in "${PAYLOADS[@]}"
+  do
+    echo "Running experiment $n $PAYLOAD"
+    deploy
+    run
+    remove
+  done
+done
