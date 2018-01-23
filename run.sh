@@ -28,10 +28,10 @@ cd ..
 LOGS_BASE_DIR=logs
 EXPERIMENT_NAME=constant_load_final
 WORKLOAD=../workloads/constant_10
-SYSTEM=lambda
-FOLDER=serverless_on_aws
+SYSTEM=gcf
+FOLDER=serverless_on_gcf
 PAYLOADS=( 0, 50, 100)
-NUM_RUNS=5
+NUM_RUNS=1
 PAYLOAD_FILE=pi"$PAYLOAD"mb.txt
 
 mkdir $LOGS_BASE_DIR/$EXPERIMENT_NAME
