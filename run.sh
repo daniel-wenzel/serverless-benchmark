@@ -19,13 +19,18 @@ function run {
   cd ..
 }
 
+mkdir logs
+mkdir fileGenerator/files
+cd fileGenerator
+node index.js
+cd ..
 
 LOGS_BASE_DIR=logs
-EXPERIMENT_NAME=constant_load
-WORKLOAD=../workloads/constant_15
+EXPERIMENT_NAME=constant_load_final
+WORKLOAD=../workloads/constant_10
 SYSTEM=lambda
 FOLDER=serverless_on_aws
-PAYLOADS=( 0, 50, 100)
+PAYLOADS=( 50) #( 0, 50, 100)
 NUM_RUNS=1
 PAYLOAD_FILE=pi"$PAYLOAD"mb.txt
 
