@@ -15,7 +15,7 @@ To run this:
 	"AWS_SECRET_ACCESS_KEY":"YOUR SECRET HERE"
 }
 ```
-* adjust the filenames in the ___PD_/deployment_experiment/bash/main.py__ file: lines 7 & 8.
+* adjust the filenames in the ___PD_/deployment_experiment/bash/main.py__ file: lines 6 & 7.
 * run the tests with ```python main.py```
 * wait
 * the results are stored in a CSV file in the corresponding results directory.

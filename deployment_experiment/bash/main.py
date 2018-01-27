@@ -4,11 +4,12 @@ import subprocess
 from time import time
 import shutil
 
-GCP_CREDENTIALS_FILE = "serverless-test-XXX.json"
+GCP_PROJECT = "serverless-test-192109"
+GCP_CREDENTIALS_FILE = "serverless-test-1f7b50db4823.json"
 AWS_CREDENTIALS_FILE = "aws-creds.json"
 
 N_TESTS_FOR_EACH_AMOUNT = 1
-CLEAR_TEST_FOLDERS = True
+CLEAR_TEST_FOLDERS = False
 
 AWS_GITIGNORE = """# package directories
 node_modules
@@ -105,7 +106,7 @@ GCP_YAML_TEMPLATE = """service: gcf-nodejs
 provider:
   name: google
   runtime: nodejs
-  project: serverless-test-191719
+  project: {PROJ}
   credentials: {CRED}
 
 plugins:
@@ -149,7 +150,7 @@ if __name__ == '__main__':
     test_id = int(time())
 
     # 1, 2, 4, 8, 16, 32, ..., 1024
-    amounts_of_functions = map(lambda x: 2 ** x, range(10))
+    amounts_of_functions = map(lambda x: x, range(1, 2, 1))
     aws_creds = os.path.join(os.path.dirname(__file__), '..', AWS_CREDENTIALS_FILE)
     gcp_creds = os.path.join(os.path.dirname(__file__), '..', GCP_CREDENTIALS_FILE)
 
@@ -165,7 +166,7 @@ if __name__ == '__main__':
 
     results_file = open(results_file_name, 'w+')
     # write results header
-    results_file.write("%s,%s,%s\n" % ("amount_of_functions", "aws_average", "gcp_average"))
+    results_file.write("%s,%s,%s\n" % ("amount_of_functions", "aws_times", "gcp_times"))
 
     aws_creds_json = json.load(open(aws_creds))
     os.environ['AWS_ACCESS_KEY_ID'] = aws_creds_json['AWS_ACCESS_KEY_ID']
@@ -198,7 +199,7 @@ if __name__ == '__main__':
             aws_declarations += AWS_YAML_FN_TEMPLATE.format(NAME=function_name)
 
         gcp_index_js = GCP_TEMPLATE.format(FNS=gcp_functions)
-        gcp_serverless_yaml = GCP_YAML_TEMPLATE.format(FNS=gcp_declarations, CRED=gcp_creds)
+        gcp_serverless_yaml = GCP_YAML_TEMPLATE.format(FNS=gcp_declarations, CRED=gcp_creds, PROJ=GCP_PROJECT)
         aws_handler_js = AWS_TEMPLATE.format(FNS=aws_functions)
         aws_serverless_yaml = AWS_YAML_TEMPLATE.format(FNS=aws_declarations)
 
@@ -251,17 +252,11 @@ if __name__ == '__main__':
             gcp_time = time() - d1
             gcp_times.append(gcp_time)
 
-        aws_avg = sum(aws_times) / len(aws_times)
-        gcp_avg = sum(gcp_times) / len(gcp_times)
-        aws_min = min(aws_times)
-        gcp_min = min(gcp_times)
-        aws_max = max(aws_times)
-        gcp_max = max(gcp_times)
-
         # store times
         results_file.write(
-            "%s,%s,%s,%s,%s,%s,%s\n" % (
-                current_amount_of_function, aws_avg, gcp_avg, aws_min, gcp_min, aws_max, gcp_max))
+            "%s,%s,%s\n" % (
+                current_amount_of_function, '~'.join(map(str, aws_times)), '~'.join(map(str, gcp_times))))
+        results_file.flush()
         if CLEAR_TEST_FOLDERS:
             shutil.rmtree(os.path.join(os.path.dirname(__file__), '..', "test-%s" % test_id,
                                        "N%s" % current_amount_of_function), ignore_errors=True)
